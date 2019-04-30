@@ -1,0 +1,4 @@
+P -> numR | varX
+X -> R | = E
+E -> numR | varR
+R -> -E | +E | ε
