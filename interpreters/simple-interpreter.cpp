@@ -1,5 +1,4 @@
 #include <iostream>
-#include <string>
 using namespace std;
 
 struct variable {
@@ -8,7 +7,6 @@ struct variable {
 };
 
 //DYNAMIC VECTOR TO STORE THE SYMBOL TABLE
-//variable symbolTable [5];
 
 //PROTOTYPE
 int p();
@@ -18,8 +16,6 @@ int e();
 void match(char c);
 int numMatch();
 int varMatch();
-int isDigit(char c);
-int isVar(char c);
 int calculate();
 void createVar();
 
@@ -41,15 +37,15 @@ char lastop;
 char lastvar;
 
 int p() {
-  if(isDigit(lookahead) == 1) {
+  if(isdigit(lookahead) != 0) {
     numMatch();
     answer = lastvalue;
     r();
-  } else if(isVar(lookahead) == 1) {
+  } else if(isalpha(lookahead) != 0) {
     varMatch();
     x();
   } else {
-    printf("Unexpected character!\n");
+    cout << "Unexpected character!" << "\n";
   }
   return 0;
 }
@@ -81,22 +77,22 @@ int r() {
   } else if (lookahead == EOF) {
     //END OF FILE
   } else {
-    printf("Unexpected character!\n");
+    cout << "Unexpected character!" << "\n";
   }
   return 0;
 }
 
 int e() {
-  if(isDigit(lookahead) == 1) {
+  if(isdigit(lookahead) != 0) {
     calculate();
     numMatch();
     r();
-  } else if(isVar(lookahead) == 1) {
+  } else if(isalpha(lookahead) != 0) {
     calculate();
     varMatch();
     r();
   } else {
-    printf("Unexpected character!\n");
+    cout << "Unexpected character!" << "\n";
   }
   return 0;
 }
@@ -105,7 +101,7 @@ void match(char c) {
   if (lookahead == c) {
     lookahead = nextToken();
   } else {
-    printf("Deu errinho!\n");
+    cout << "Deu errinho!" << "\n";
   }
 }
 
@@ -121,7 +117,7 @@ int numMatch() {
     case '7': match('7'); lastvalue = 7; break;
     case '8': match('8'); lastvalue = 8; break;
     case '9': match('9'); lastvalue = 9; break;
-    default: printf("Number expected.");
+    default: cout << "Number expected!" << "\n";
   }
   return 0;
 }
@@ -154,57 +150,9 @@ int varMatch() {
     case 'b': match('b'); lastvar = 'b'; break;
     case 'n': match('n'); lastvar = 'n'; break;
     case 'm': match('m'); lastvar = 'm'; break;
-    default: printf("Var expected.");
+    default: cout << "Var expected!" << "\n";
   }
   return 0;
-}
-
-int isDigit(char c) {
-  switch (c) {
-    case '0': return 1; break;
-    case '1': return 1; break;
-    case '2': return 1; break;
-    case '3': return 1; break;
-    case '4': return 1; break;
-    case '5': return 1; break;
-    case '6': return 1; break;
-    case '7': return 1; break;
-    case '8': return 1; break;
-    case '9': return 1; break;
-    default: return 0;
-  }
-}
-
-int isVar(char c) {
-  switch (c) {
-    case 'q': return 1; break;
-    case 'w': return 1; break;
-    case 'e': return 1; break;
-    case 'r': return 1; break;
-    case 't': return 1; break;
-    case 'y': return 1; break;
-    case 'u': return 1; break;
-    case 'i': return 1; break;
-    case 'o': return 1; break;
-    case 'p': return 1; break;
-    case 'a': return 1; break;
-    case 's': return 1; break;
-    case 'd': return 1; break;
-    case 'f': return 1; break;
-    case 'g': return 1; break;
-    case 'h': return 1; break;
-    case 'j': return 1; break;
-    case 'k': return 1; break;
-    case 'l': return 1; break;
-    case 'z': return 1; break;
-    case 'x': return 1; break;
-    case 'c': return 1; break;
-    case 'v': return 1; break;
-    case 'b': return 1; break;
-    case 'n': return 1; break;
-    case 'm': return 1; break;
-    default: return 0;
-  }
 }
 
 int calculate() {
@@ -217,7 +165,7 @@ int calculate() {
 }
 
 void createVar() {
-
+  //Work In Progress
 }
 
 // --- ENTRYPOINT
@@ -227,7 +175,8 @@ int main(){
   while (!input.empty()){
     lookahead = nextToken();
     p();
-    printf("%d\n$", answer);
+    cout << answer << "\n\n";
+    cout << "$ ";
     getline(cin, input);
     count = 0;
   }
