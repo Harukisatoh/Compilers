@@ -10,7 +10,7 @@ package org.myorganization.mycompiler;
 myGrammar : program;
 
 /* 
- Nonterminal symbols
+ Parser rules
  */
 program: body
        ;
@@ -27,12 +27,13 @@ parameters: OPNPAR parameters_declaration CLSPAR
           ;
 parameters_declaration: (type NAME)? (COMMA type NAME)*
                       ;
-block: OPNBR (statement)+ CLSBR
+block: OPNBR (statement)* CLSBR
      ;
 statement: var_declaration EOL
          | var_assignment EOL
          | in EOL
          | out EOL
+         | if_statement
          ;
 in: READLN OPNPAR CLSPAR
   ;
@@ -57,6 +58,29 @@ fact              : NAME
                   | OPNPAR expr CLSPAR
                   | in
                   ;
+if_statement: IF OPNPAR cond CLSPAR block else_statement?
+           ;
+else_statement: ELSE (if_statement | block)
+              ;
+cond            : cond OR cond_and
+                | cond_and       
+                ;
+
+cond_and        : cond_and AND cond_term
+                | cond_term
+                ;
+
+cond_term       : expr relop expr                                          
+                | OPNPAR cond CLSPAR
+                ;
+
+relop           : MOR
+                | LESS 
+                | MOR_EQ 
+                | LESS_EQ 
+                | EQ
+                | NEQ 
+                ;
 number: INT
       | FLOAT
       ;
@@ -78,6 +102,16 @@ SUB: '-';
 MUL: '*';
 DIV: '/';
 MOD: '%';
+OR: '||';
+AND: '&&';
+MOR: '>';
+LESS: '<';
+MOR_EQ: '>=';
+LESS_EQ: '<=';
+EQ: '==';
+NEQ: '!=';
+IF: 'if';
+ELSE: 'else';
 READLN: 'readln';
 WRITELN: 'writeln';
 WRITE: 'write';
@@ -94,3 +128,11 @@ FLOAT: [¬]?[0-9]+'.'[0-9]+;
 
 // Whitespace management
 WS: [ \t\r\n]+ -> skip;
+
+// Comment management
+COMMENT
+: '/*' .*? '*/' -> skip
+;
+LINE_COMMENT
+: '//' ~[\r\n]* -> skip
+;

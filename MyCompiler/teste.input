@@ -1,13 +1,33 @@
 int funcao(int a, float b) {
 
+    /*
+    // Writes and reads
     writeln("vamo ver se vai dar certo irmao");
     writeln("vamo ver então");
     readln();
 
+    // Var declaration
     int var;
     var = 2-5;
     var = (2*¬5)+var;
     var = (2+5)*(32*var2);
     var = readln();
     var = readln() + 1;
+    
+
+    // If and else statements
+    if(3>5) {
+
+    }
+
+    if(3==3 && (3!=5 || 5>3)) {
+        
+    } else if(var > 3) {
+        
+    } else {
+        
+    }
+    */
+
+
 }
