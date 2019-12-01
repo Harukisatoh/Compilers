@@ -29,19 +29,19 @@ parameters_declaration: (type NAME)? (COMMA type NAME)*
                       ;
 block: OPNBR (statement)+ CLSBR
      ;
-statement: var_declaration
-         | var_assignment
-         | in
-         | out
+statement: var_declaration EOL
+         | var_assignment EOL
+         | in EOL
+         | out EOL
          ;
-in: READLN OPNPAR CLSPAR EOL
+in: READLN OPNPAR CLSPAR
   ;
-out: WRITELN OPNPAR STRING CLSPAR EOL
-   | WRITE OPNPAR STRING CLSPAR EOL
+out: WRITELN OPNPAR STRING CLSPAR
+   | WRITE OPNPAR STRING CLSPAR
    ;
-var_declaration: type NAME EOL
+var_declaration: type NAME
                ;
-var_assignment: NAME ATR expr EOL
+var_assignment: NAME ATR expr
               ;
 expr              : term ADD expr 
                   | term SUB expr
@@ -54,7 +54,8 @@ term              : fact MUL term
                   ;
 fact              : NAME 
                   | number 
-                  | OPNPAR expr CLSPAR 
+                  | OPNPAR expr CLSPAR
+                  | in
                   ;
 number: INT
       | FLOAT

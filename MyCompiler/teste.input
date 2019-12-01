@@ -8,5 +8,6 @@ int funcao(int a, float b) {
     var = 2-5;
     var = (2*¬5)+var;
     var = (2+5)*(32*var2);
-
+    var = readln();
+    var = readln() + 1;
 }

@@ -37,7 +37,7 @@ public class Run {
         JFrame frame = new JFrame("SRC: " + tree.getText());
         JPanel panel = new JPanel();
         TreeViewer viewr = new TreeViewer(Arrays.asList(parser.getRuleNames()), tree);
-        viewr.setScale(1);
+        viewr.setScale(.8);
         panel.add(viewr);
         frame.add(panel);
         frame.setSize(1000, 600);
