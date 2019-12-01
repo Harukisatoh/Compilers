@@ -1,0 +1,7 @@
+int funcao(int a, float b) {
+
+    writeln("vamo ver se vai dar certo irmao");
+    write("vamo ver então");
+    readln;
+
+}
