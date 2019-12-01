@@ -1,7 +1,12 @@
 int funcao(int a, float b) {
 
     writeln("vamo ver se vai dar certo irmao");
-    write("vamo ver então");
-    readln;
+    writeln("vamo ver então");
+    readln();
+
+    int var;
+    var = 2-5;
+    var = (2*5)+var;
+    var = (2+5)*(32*var2);
 
 }
