@@ -6,11 +6,11 @@ grammar MyGrammar;
 package org.myorganization.mycompiler;
 }
 
-// Monoline comment about a parser rule
+// The initial nonterminal symbol
 myGrammar : program;
 
 /* 
- A multi-line Java-like comment
+ Nonterminal symbols
  */
 program: body
        ;
@@ -43,19 +43,18 @@ var_declaration: type NAME EOL
                ;
 var_assignment: NAME ATR expr EOL
               ;
-expr              : expr ADD term 
-                  | expr SUB term
-		  | expr term
-                  | term
+expr              : term ADD expr 
+                  | term SUB expr
+		  | term
                   ;
-term              : term MUL fact 
-                  | term DIV fact 
-                  | term MOD fact
+term              : fact MUL term 
+                  | fact DIV term 
+                  | fact MOD term
 		  | fact
                   ;
-fact              : NAME
+fact              : NAME 
                   | number 
-                  | OPNPAR expr CLSPAR
+                  | OPNPAR expr CLSPAR 
                   ;
 number: INT
       | FLOAT
@@ -83,8 +82,14 @@ WRITELN: 'writeln';
 WRITE: 'write';
 STRING: '"' ~('\r' | '\n' | '"')* '"' ;
 NAME: [_a-zA-Z][_a-zA-Z0-9]*;
-INT: [-]?[0-9]+;
-FLOAT: [-]?[0-9]+'.'[0-9]+;
+INT: [¬]?[0-9]+;                
+FLOAT: [¬]?[0-9]+'.'[0-9]+;     
+/*
+    The symbol ¬ says that the number is negative, this is necessary because
+    the parser doesn't know how to properly handle subtraction expressions
+    like (2-5), without that the AST erroneously derives to a positive number
+    followed by a negative one.
+*/
 
 // Whitespace management
 WS: [ \t\r\n]+ -> skip;
