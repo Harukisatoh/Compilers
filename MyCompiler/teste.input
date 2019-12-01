@@ -17,17 +17,22 @@ int funcao(int a, float b) {
 
     // If and else statements
     if(3>5) {
-
     }
 
     if(3==3 && (3!=5 || 5>3)) {
-        
     } else if(var > 3) {
-        
-    } else {
-        
+    } else {   
     }
-    */
 
+    // Loop statements
+    for(int i = 0; i < 3; i++) {
+    }
+
+    while (var) {  
+    }
+
+    do {
+    } while(cond);
+    */
 
 }

@@ -30,10 +30,13 @@ parameters_declaration: (type NAME)? (COMMA type NAME)*
 block: OPNBR (statement)* CLSBR
      ;
 statement: var_declaration EOL
-         | var_assignment EOL
+         | var_attrib EOL
          | in EOL
          | out EOL
          | if_statement
+         | for_statement
+         | while_statement
+         | dowhile_statement EOL
          ;
 in: READLN OPNPAR CLSPAR
   ;
@@ -41,9 +44,14 @@ out: WRITELN OPNPAR STRING CLSPAR
    | WRITE OPNPAR STRING CLSPAR
    ;
 var_declaration: type NAME
+               | var_decl_and_attrib
                ;
-var_assignment: NAME ATR expr
-              ;
+var_decl_and_attrib: type NAME ATR expr
+                   ;
+var_attrib: NAME ATR expr
+          | NAME ADD ADD
+          | NAME SUB SUB
+          ;
 expr              : term ADD expr 
                   | term SUB expr
 		  | term
@@ -72,6 +80,7 @@ cond_and        : cond_and AND cond_term
 
 cond_term       : expr relop expr                                          
                 | OPNPAR cond CLSPAR
+                | expr
                 ;
 
 relop           : MOR
@@ -79,8 +88,19 @@ relop           : MOR
                 | MOR_EQ 
                 | LESS_EQ 
                 | EQ
-                | NEQ 
+                | NEQ
                 ;
+for_statement: FOR OPNPAR for_decl EOL cond EOL var_attrib CLSPAR block
+             ;
+for_decl: var_decl_and_attrib
+        | var_attrib
+        ;
+while_statement: while_cond block
+               ;
+while_cond: WHILE OPNPAR cond CLSPAR
+          ;
+dowhile_statement: DO block while_cond
+                 ;
 number: INT
       | FLOAT
       ;
@@ -115,6 +135,9 @@ ELSE: 'else';
 READLN: 'readln';
 WRITELN: 'writeln';
 WRITE: 'write';
+FOR: 'for';
+WHILE: 'while';
+DO: 'do';
 STRING: '"' ~('\r' | '\n' | '"')* '"' ;
 NAME: [_a-zA-Z][_a-zA-Z0-9]*;
 INT: [¬]?[0-9]+;                
