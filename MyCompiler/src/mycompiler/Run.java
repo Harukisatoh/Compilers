@@ -28,8 +28,12 @@ public class Run {
         MyGrammarLexer lexer = new MyGrammarLexer(input);
         TokenStream tokens = new BufferedTokenStream(lexer);
         MyGrammarParser parser = new MyGrammarParser(tokens);
-        MyGrammarParser.MyGrammarContext progr = parser.myGrammar();
-        showParseTreeFrame(progr, parser);
+        //MyGrammarParser.MyGrammarContext progr = parser.myGrammar();
+        ParseTree tree = parser.myGrammar();
+        Visitor visitor = new Visitor();
+        visitor.visit(tree);
+        
+        showParseTreeFrame(tree, parser);
 
     }
 

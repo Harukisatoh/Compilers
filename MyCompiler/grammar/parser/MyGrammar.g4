@@ -21,10 +21,10 @@ body                : (function)+
 function            : type NAME parameters block
                     ;
 
-type                : TYPEINT
-                    | TYPEFLOAT
-                    | TYPEBOOLEAN
-                    | TYPESTRING
+type                : TYPEINT           #typeInt
+                    | TYPEFLOAT         #typeFloat
+                    | TYPEBOOLEAN       #typeBoolean
+                    | TYPESTRING        #typeString
                     ;
 
 parameters          : OPNPAR params_decl CLSPAR
@@ -53,8 +53,8 @@ out                 : WRITELN OPNPAR STRING CLSPAR
                     | WRITE OPNPAR STRING CLSPAR
                     ;
 
-var_declaration     : type NAME
-                    | var_decl_and_attrib
+var_declaration     : type NAME             #varDeclRule
+                    | var_decl_and_attrib   #varDeclAndAttribRule
                     ;
 
 var_decl_and_attrib : type NAME ATR expr
@@ -65,21 +65,21 @@ var_attrib          : NAME ATR expr
                     | NAME SUB SUB
                     ;
 
-expr                : term ADD expr 
-                    | term SUB expr
-                    | term
+expr                : l=term ADD r=expr         #exprAdd
+                    | l=term SUB r=expr         #exprSub
+                    | t=term                  #exprTerm
                     ;
 
-term                : fact MUL term 
-                    | fact DIV term 
-                    | fact MOD term
-                    | fact
+term                : l=fact MUL r=term         #termMul
+                    | l=fact DIV r=term         #termDiv
+                    | l=fact MOD r=term         #termMod
+                    | f=fact                  #termFact
                     ;
 
-fact                : NAME 
-                    | number 
-                    | OPNPAR expr CLSPAR
-                    | in
+fact                : NAME                  #factName
+                    | (INT | FLOAT)         #factNumber
+                    | OPNPAR expr CLSPAR    #factExpr
+                    | in                    #factIn
                     ;
 
 if_statement        : IF OPNPAR cond CLSPAR block else_statement?
@@ -125,10 +125,6 @@ while_cond          : WHILE OPNPAR cond CLSPAR
 dowhile_statement   : DO block while_cond
                     ;
 
-number              : INT
-                    | FLOAT
-                    ;
-
 // Lexer rules
 TYPEINT: 'int';
 TYPEFLOAT: 'float';
@@ -162,7 +158,8 @@ WRITE: 'write';
 FOR: 'for';
 WHILE: 'while';
 DO: 'do';
-STRING: '"' ~('\r' | '\n' | '"')* '"' ;
+//STRING: '"' ~('\r' | '\n' | '"')* '"' ;
+STRING: '"' (~'"'|'"')* '"';
 NAME: [_a-zA-Z][_a-zA-Z0-9]*;
 INT: [¬]?[0-9]+;                
 FLOAT: [¬]?[0-9]+'.'[0-9]+;     
@@ -177,9 +174,5 @@ FLOAT: [¬]?[0-9]+'.'[0-9]+;
 WS: [ \t\r\n]+ -> skip;
 
 // Comment management
-COMMENT
-: '/*' .*? '*/' -> skip
-;
-LINE_COMMENT
-: '//' ~[\r\n]* -> skip
-;
+COMMENT: '/*' .*? '*/' -> skip;
+LINE_COMMENT: '//' ~[\r\n]* -> skip;

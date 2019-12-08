@@ -1,5 +1,7 @@
 int funcao(int a, float b) {
 
+    string c = (8%¬0) - 3;
+
     /*
     // Writes and reads
     writeln("vamo ver se vai dar certo irmao");
