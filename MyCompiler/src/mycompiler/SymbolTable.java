@@ -52,6 +52,14 @@ public class SymbolTable {
         symbols.add(s);
     }
     
+    public void remove(String name) {
+        for(int i = 0; i < symbols.size(); i++) {
+            if(symbols.get(i).getName().equals(name)) {
+                symbols.remove(i);
+            }
+        }
+    }
+    
     public boolean checkIfAlreadyExists(String name) {
         for(int i = 0; i < symbols.size(); i++) {
             if(symbols.get(i).getName().equals(name)) {
@@ -73,9 +81,5 @@ public class SymbolTable {
     public ArrayList<Symbol> returnArrayList() {
         return symbols;
     }
-    /*
-    public void checkIfSymbolExists() {
-        
-    }*/
 
 }

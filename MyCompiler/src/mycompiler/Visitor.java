@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.Stack;
 import org.myorganization.mycompiler.*;
 import org.myorganization.mycompiler.MyGrammarParser.Out_params_terminalsContext;
 
@@ -15,7 +16,8 @@ import org.myorganization.mycompiler.MyGrammarParser.Out_params_terminalsContext
 public class Visitor extends MyGrammarBaseVisitor {
     
     FunctionTable ft = new FunctionTable();
-    String currentContext = null;
+    Stack currentScope = new Stack();
+    //String currentContext = null;
     
     /*@Override
     public Object visitMyGrammar(MyGrammarParser.MyGrammarContext ctx) {
@@ -32,7 +34,8 @@ public class Visitor extends MyGrammarBaseVisitor {
     @Override
     public Object visitFunction_decl(MyGrammarParser.Function_declContext ctx) {
         System.out.println("entrou no function");
-        currentContext = ctx.NAME().getText();
+        // Creates a new scope with function's name
+        currentScope.push(ctx.NAME().getText());
         // Gets function info and add to function table
         String type = (String) visit(ctx.type());
         String name = ctx.NAME().getText();
@@ -43,7 +46,12 @@ public class Visitor extends MyGrammarBaseVisitor {
         visit(ctx.parameters());
         
         // Goes to block's rule
-        return visit(ctx.block());
+        visit(ctx.block());
+        
+        // Removes function's scope after the execution
+        currentScope.pop();
+        
+        return null;
     }
     
     /*@Override
@@ -66,14 +74,14 @@ public class Visitor extends MyGrammarBaseVisitor {
         System.out.println("entrou na declaração");
         
         // Gets symbol table from current function
-        SymbolTable currentSt = ft.getFunction(currentContext).getSt();
+        SymbolTable currentSt = ft.getFunction(currentScope.peek().toString()).getSt();
         
         // Gets var type from declaration
         String varType = ctx.start.getText();
         // Gets var name from declaration
         String varName = ctx.NAME().toString();
         // Gets scope from declaration
-        String varScope = currentContext;
+        String varScope = currentScope.peek().toString();
         // Gets value from declaration
         Value varValue = null;
         
@@ -93,14 +101,14 @@ public class Visitor extends MyGrammarBaseVisitor {
         System.out.println("entrou na declaração e atribuição");
         
         // Gets symbol table from current function
-        SymbolTable currentSt = ft.getFunction(currentContext).getSt();
+        SymbolTable currentSt = ft.getFunction(currentScope.peek().toString()).getSt();
         
         // Gets var type from declaration
         String varType = ctx.start.getText();
         // Gets var name from declaration
         String varName = ctx.var_declaration().NAME().getText();
         // Gets scope from declaration
-        String varScope = "0"; // NOT WORKING YET - 0 means global
+        String varScope = currentScope.peek().toString();
         // Gets value from declaration
         Value varValue = (Value) visit(ctx.expr());
         
@@ -119,7 +127,7 @@ public class Visitor extends MyGrammarBaseVisitor {
     public Object visitVar_attrib_expr(MyGrammarParser.Var_attrib_exprContext ctx) {
         
         // Gets symbol table from current function
-        SymbolTable currentSt = ft.getFunction(currentContext).getSt();
+        SymbolTable currentSt = ft.getFunction(currentScope.peek().toString()).getSt();
         
         // Gets var name
         String varName = ctx.NAME().getText();
@@ -140,7 +148,7 @@ public class Visitor extends MyGrammarBaseVisitor {
     @Override
     public Object visitVar_attrib_plus(MyGrammarParser.Var_attrib_plusContext ctx) {
         // Gets symbol table from current function
-        SymbolTable currentSt = ft.getFunction(currentContext).getSt();
+        SymbolTable currentSt = ft.getFunction(currentScope.peek().toString()).getSt();
         
         // Gets var name
         String varName = ctx.NAME().getText();
@@ -167,7 +175,7 @@ public class Visitor extends MyGrammarBaseVisitor {
     @Override
     public Object visitVar_attrib_sub(MyGrammarParser.Var_attrib_subContext ctx) {
         // Gets symbol table from current function
-        SymbolTable currentSt = ft.getFunction(currentContext).getSt();
+        SymbolTable currentSt = ft.getFunction(currentScope.peek().toString()).getSt();
         
         // Gets var name
         String varName = ctx.NAME().getText();
@@ -258,7 +266,7 @@ public class Visitor extends MyGrammarBaseVisitor {
     @Override
     public Value visitFact_name(MyGrammarParser.Fact_nameContext ctx) {
         // Gets symbol table from current function
-        SymbolTable currentSt = ft.getFunction(currentContext).getSt();
+        SymbolTable currentSt = ft.getFunction(currentScope.peek().toString()).getSt();
         
         // Aux symbol
         Symbol s = null;
@@ -369,6 +377,45 @@ public class Visitor extends MyGrammarBaseVisitor {
         }
         
         return null;
+    }
+    
+    @Override
+    public Object visitFor_statement(MyGrammarParser.For_statementContext ctx) {
+        
+        // Gets symbol table from current function
+        SymbolTable currentSt = ft.getFunction(currentScope.peek().toString()).getSt();
+        
+        // Gets array list of variable names from params
+        ArrayList<String> for_decl = (ArrayList<String>) visit(ctx.for_decl());
+        
+        // While condition still true executes block statement code and updates iteration variable values
+        while((Boolean) visit(ctx.cond())) {
+            visit(ctx.block());
+            visit(ctx.for_attrib());
+        }
+        
+        // Remove iteration variables after the for loop
+        for(int i = 0; i < for_decl.size(); i++) {
+            currentSt.remove(for_decl.get(i));
+        }
+        
+        return null;
+    }
+    
+    @Override
+    public ArrayList<String> visitFor_decl(MyGrammarParser.For_declContext ctx) {
+        ArrayList<String> vars = new ArrayList();
+        
+        // Gets the name of the variables that will be added to for scope
+        for(int i = 0; i < ctx.var_decl_and_attrib().size(); i++) {    
+            vars.add(ctx.var_decl_and_attrib().get(i).var_declaration().NAME().getText());
+        }
+        
+        // Visits var declarations
+        visitChildren(ctx);
+        
+        // Return that list of names
+        return vars;
     }
     
     @Override

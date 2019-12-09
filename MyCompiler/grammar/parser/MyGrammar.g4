@@ -116,11 +116,13 @@ relop               : MOR
                     | NEQ
                     ;
 
-for_statement       : FOR OPNPAR for_decl EOL cond EOL var_attrib CLSPAR block
+for_statement       : FOR OPNPAR for_decl EOL cond EOL for_attrib CLSPAR block
                     ;
 
-for_decl            : var_decl_and_attrib
-                    | var_attrib
+for_decl            : var_decl_and_attrib (COMMA var_decl_and_attrib)*
+                    ;
+
+for_attrib          : var_attrib (COMMA var_attrib)*
                     ;
 
 while_statement     : while_cond block
