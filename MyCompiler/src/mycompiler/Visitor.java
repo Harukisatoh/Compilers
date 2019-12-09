@@ -419,6 +419,23 @@ public class Visitor extends MyGrammarBaseVisitor {
     }
     
     @Override
+    public Object visitWhile_statement(MyGrammarParser.While_statementContext ctx) {
+        
+        // While condition still true executes block statement code and updates iteration variable values
+        while((Boolean) visit(ctx.while_cond())) {
+            visit(ctx.block());
+        }
+        
+        return null;
+    }
+    
+    @Override
+    public Boolean visitWhile_cond(MyGrammarParser.While_condContext ctx) {
+        // Returns the boolean value from while condition
+        return (Boolean) visit(ctx.cond());
+    }
+    
+    @Override
     public Value visitIn(MyGrammarParser.InContext ctx) {
         // Gets input from user
         Scanner scanner = new Scanner(System.in);
