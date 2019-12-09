@@ -1,8 +1,17 @@
-int funcao(int a, float b) {
+int main() {
+    
+    int a;
+    writeln(a);
+    a++;
+    writeln(a);
 
-    string c = (8%¬0) - 3;
-
-    /*
+}
+/*
+int funcao(float b, boolean d) {
+    
+    
+    string c = (8%0) - readln();
+    
     // Writes and reads
     writeln("vamo ver se vai dar certo irmao");
     writeln("vamo ver então");
@@ -35,6 +44,7 @@ int funcao(int a, float b) {
 
     do {
     } while(cond);
-    */
+    
 
 }
+*/

@@ -15,28 +15,29 @@ myGrammar : program;
 program             : body
                     ;
 
-body                : (function)+
+body                : (function_decl)+
                     ;
 
-function            : type NAME parameters block
+function_decl       : type NAME parameters block
                     ;
 
-type                : TYPEINT           #typeInt
-                    | TYPEFLOAT         #typeFloat
-                    | TYPEBOOLEAN       #typeBoolean
-                    | TYPESTRING        #typeString
+type                : TYPEINT
+                    | TYPEFLOAT
+                    | TYPEBOOLEAN
+                    | TYPESTRING
                     ;
 
 parameters          : OPNPAR params_decl CLSPAR
                     ;
 
-params_decl         : (type NAME)? (COMMA type NAME)*
+params_decl         : (var_declaration)? (COMMA var_declaration)*
                     ;
 
 block               : OPNBR (statement)* CLSBR
                     ;
 
 statement           : var_declaration EOL
+                    | var_decl_and_attrib EOL
                     | var_attrib EOL
                     | in EOL
                     | out EOL
@@ -49,37 +50,43 @@ statement           : var_declaration EOL
 in                  : READLN OPNPAR CLSPAR
                     ;
 
-out                 : WRITELN OPNPAR STRING CLSPAR
-                    | WRITE OPNPAR STRING CLSPAR
+out                 : WRITELN OPNPAR out_params CLSPAR #writeln 
+                    | WRITE OPNPAR out_params CLSPAR   #write
                     ;
 
-var_declaration     : type NAME             #varDeclRule
-                    | var_decl_and_attrib   #varDeclAndAttribRule
+out_params          : out_params_terminals (COMMA out_params_terminals)*
                     ;
 
-var_decl_and_attrib : type NAME ATR expr
+out_params_terminals    : STRING                                        #out_params_string
+                        | expr                                          #out_params_expr
+                        ;
+
+var_declaration     : type NAME
                     ;
 
-var_attrib          : NAME ATR expr
-                    | NAME ADD ADD
-                    | NAME SUB SUB
+var_decl_and_attrib : var_declaration ATR expr
                     ;
 
-expr                : l=term ADD r=expr         #exprAdd
-                    | l=term SUB r=expr         #exprSub
-                    | t=term                  #exprTerm
+var_attrib          : NAME ATR expr             #var_attrib_expr
+                    | NAME ADD ADD              #var_attrib_plus
+                    | NAME SUB SUB              #var_attrib_sub
                     ;
 
-term                : l=fact MUL r=term         #termMul
-                    | l=fact DIV r=term         #termDiv
-                    | l=fact MOD r=term         #termMod
-                    | f=fact                  #termFact
+expr                : l=term ADD r=expr         #expr_add
+                    | l=term SUB r=expr         #expr_sub
+                    | t=term                    #expr_term
                     ;
 
-fact                : NAME                  #factName
-                    | (INT | FLOAT)         #factNumber
-                    | OPNPAR expr CLSPAR    #factExpr
-                    | in                    #factIn
+term                : l=fact MUL r=term         #term_mul
+                    | l=fact DIV r=term         #term_div
+                    | l=fact MOD r=term         #term_mod
+                    | f=fact                  #term_fact
+                    ;
+
+fact                : NAME                  #fact_name
+                    | (INT | FLOAT)         #fact_number
+                    | OPNPAR expr CLSPAR    #fact_expr
+                    | in                    #fact_in
                     ;
 
 if_statement        : IF OPNPAR cond CLSPAR block else_statement?
@@ -159,7 +166,7 @@ FOR: 'for';
 WHILE: 'while';
 DO: 'do';
 //STRING: '"' ~('\r' | '\n' | '"')* '"' ;
-STRING: '"' (~'"'|'"')* '"';
+STRING: '"' ~('"')* '"';
 NAME: [_a-zA-Z][_a-zA-Z0-9]*;
 INT: [¬]?[0-9]+;                
 FLOAT: [¬]?[0-9]+'.'[0-9]+;     

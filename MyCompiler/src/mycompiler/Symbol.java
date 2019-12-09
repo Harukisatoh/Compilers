@@ -5,33 +5,22 @@ package mycompiler;
  * @author haruk
  */
 public class Symbol {
-    private int id;
-    private String name;
     private String type;
+    private String name;
     private String scope;
-    private String value;
+    private Value value;
 
     public Symbol() {
-        this.id = 0;
-        this.name = "";
         this.type = "";
+        this.name = "";
         this.scope = "";
     }
     
-    public Symbol(int id, String name, String type, String scope, String value) {
-        this.id = id;
-        this.name = name;
+    public Symbol(String type, String name, String scope, Value value) {
         this.type = type;
+        this.name = name;
         this.scope = scope;
         this.value = value;
-    }
-    
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getName() {
@@ -58,11 +47,11 @@ public class Symbol {
         this.scope = scope;
     }
 
-    public String getValue() {
+    public Value getValue() {
         return value;
     }
 
-    public void setValue(String value) {
+    public void setValue(Value value) {
         this.value = value;
     }
     
