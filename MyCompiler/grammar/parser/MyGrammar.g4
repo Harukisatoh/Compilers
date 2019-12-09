@@ -95,17 +95,17 @@ if_statement        : IF OPNPAR cond CLSPAR block else_statement?
 else_statement      : ELSE (if_statement | block)
                     ;
 
-cond                : cond OR cond_and
-                    | cond_and       
+cond                : l=cond OR r=cond_and              #cond_or
+                    | cond_and                      #cond_cont
                     ;
 
-cond_and            : cond_and AND cond_term
-                    | cond_term
+cond_and            : l=cond_and AND r=cond_term    #cond_a
+                    | cond_term                     #cond_t
                     ;
 
-cond_term           : expr relop expr                                          
-                    | OPNPAR cond CLSPAR
-                    | expr
+cond_term           : l=expr relop r=expr       #cond_term_relop                                          
+                    | OPNPAR cond CLSPAR        #cond_term_par
+                    | expr                      #cond_term_expr
                     ;
 
 relop               : MOR

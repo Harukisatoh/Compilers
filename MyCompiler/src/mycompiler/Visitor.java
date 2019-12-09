@@ -2,6 +2,7 @@ package mycompiler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 import org.myorganization.mycompiler.*;
 import org.myorganization.mycompiler.MyGrammarParser.Out_params_terminalsContext;
@@ -298,6 +299,76 @@ public class Visitor extends MyGrammarBaseVisitor {
     @Override
     public Object visitFact_in(MyGrammarParser.Fact_inContext ctx) {
         return visit(ctx.in());
+    }
+    
+    @Override
+    public Object visitIf_statement(MyGrammarParser.If_statementContext ctx) {
+        // Gets boolean condition
+        Boolean cond = (Boolean) visit(ctx.cond());
+        
+        // If cond equals TRUE visits IF's block statement otherwise attempts to visit ELSE and IF's block statement
+        if(cond) {
+            visit(ctx.block());
+        } else {
+            try {
+                visit(ctx.else_statement());
+            } catch (NullPointerException e) {
+                // There isn't a else statement
+            }
+        }
+        
+        return null;
+    }
+    
+    @Override
+    public Object visitCond_or(MyGrammarParser.Cond_orContext ctx) {
+        // Gets boolean from left and right-hand side of the conditional
+        Boolean left = (Boolean) visit(ctx.l);
+        Boolean right = (Boolean) visit(ctx.r);
+        
+        // Returns the OR between these two
+        return (left || right);
+    }
+
+    @Override
+    public Boolean visitCond_a(MyGrammarParser.Cond_aContext ctx) {
+        // Gets boolean from left and right-hand side of the conditional
+        Boolean left = (Boolean) visit(ctx.l);
+        Boolean right = (Boolean) visit(ctx.r);
+        
+        // Returns the AND between these two
+        return (left && right);
+    }
+
+    @Override
+    public Boolean visitCond_term_relop(MyGrammarParser.Cond_term_relopContext ctx) {
+        // Gets relational operation's values
+        Value left = (Value) visit(ctx.l);
+        String relop = ctx.relop().getText();
+        Value right = (Value) visit(ctx.r);
+        
+        try {
+            // Executes the relational operation
+            switch (relop) {
+                case ">":
+                    return (left.asDouble() > right.asDouble());
+                case "<":
+                    return (left.asDouble() < right.asDouble());
+                case ">=":
+                    return (left.asDouble() >= right.asDouble());
+                case "<=":
+                    return (left.asDouble() <= right.asDouble());
+                case "==":
+                    return (Objects.equals(left.asDouble(), right.asDouble()));
+                case "!=":
+                    return (!Objects.equals(left.asDouble(), right.asDouble()));
+            }
+        } catch (NullPointerException e) {
+            System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: You can't do a relational operation with a NULL value");
+            System.exit(0);
+        }
+        
+        return null;
     }
     
     @Override

@@ -1,9 +1,13 @@
 int main() {
     
-    int a;
-    writeln(a);
-    a++;
-    writeln(a);
+    int a = 5;
+    if(a > 6) {
+        write("É null essa bosta");
+    } else if (a < 6) {
+        write("else");
+    } else {
+        write("ue");
+    }
 
 }
 /*
