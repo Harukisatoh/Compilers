@@ -421,7 +421,7 @@ public class Visitor extends MyGrammarBaseVisitor {
     @Override
     public Object visitWhile_statement(MyGrammarParser.While_statementContext ctx) {
         
-        // While condition still true executes block statement code and updates iteration variable values
+        // While condition still true executes block statement code
         while((Boolean) visit(ctx.while_cond())) {
             visit(ctx.block());
         }
@@ -433,6 +433,15 @@ public class Visitor extends MyGrammarBaseVisitor {
     public Boolean visitWhile_cond(MyGrammarParser.While_condContext ctx) {
         // Returns the boolean value from while condition
         return (Boolean) visit(ctx.cond());
+    }
+    
+    @Override
+    public Object visitDowhile_statement(MyGrammarParser.Dowhile_statementContext ctx) {
+        // Executes once and continues the execution while condition still true
+        do {
+            visit(ctx.block());
+        } while((Boolean) visit(ctx.while_cond()));
+        return null;
     }
     
     @Override

@@ -2,11 +2,11 @@ int main() {
     
     //string a = "pq";
     int b = 2;
-    while(b < 10) {
+    do {
         writeln("B: ", b);
         b++;
-    }
-
+    } while (b > 10);
+    writeln("B: ", b);
 }
 /*
 int funcao(float b, boolean d) {
