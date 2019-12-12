@@ -1,3 +1,5 @@
+int teste = 3;
+
 int main() {
     //string a = "pq";
     /*for(int a = 0, int b = 5; a < 10; a++, b++) {
@@ -5,17 +7,14 @@ int main() {
         writeln("B: ", b);
     }*/
 
-    int a = 3;
-    float b = 6.3;
+    teste = 6;
+    function(1, 3);
 
-    function(a, b);
-
-
+    
 }
 
 int function(int b, float a) {
-    writeln(">", b);
-    writeln(">", a+b);
+    writeln(">", teste);
 }
 /*
 int funcao(float b, boolean d) {

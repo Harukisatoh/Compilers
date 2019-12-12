@@ -15,7 +15,14 @@ myGrammar : program;
 program             :  body
                     ;
 
-body                : main (function_decl)*
+body                : (include)* (global EOL)* main (function_decl)*
+                    ;
+
+include             : INCLUDE OPNPAR FILE CLSPAR EOL
+                    ;
+
+global              : type NAME                 #global_decl
+                    | type NAME ATR expr        #global_decl_and_attrib
                     ;
 
 main                : TYPEINT MAIN OPNPAR CLSPAR block
@@ -178,11 +185,13 @@ WRITE: 'write';
 FOR: 'for';
 WHILE: 'while';
 DO: 'do';
+INCLUDE: 'include';
 //STRING: '"' ~('\r' | '\n' | '"')* '"' ;
 STRING: '"' ~('"')* '"';
 NAME: [_a-zA-Z][_a-zA-Z0-9]*;
 INT: [¬]?[0-9]+;                
-FLOAT: [¬]?[0-9]+'.'[0-9]+;     
+FLOAT: [¬]?[0-9]+'.'[0-9]+;
+FILE: [^/][_a-zA-Z0-9]*[.][_a-zA-Z]*;     
 /*
     The symbol ¬ says that the number is negative, this is necessary because
     the parser doesn't know how to properly handle subtraction expressions

@@ -17,6 +17,7 @@ public class Visitor extends MyGrammarBaseVisitor {
     
     FunctionTable ft = new FunctionTable();
     Stack currentScope = new Stack();
+    SymbolTable globalSt = new SymbolTable();
     //String currentContext = null;
     
     public Visitor(FunctionTable ft) {
@@ -25,8 +26,60 @@ public class Visitor extends MyGrammarBaseVisitor {
     
     @Override
     public Object visitBody(MyGrammarParser.BodyContext ctx) {
+        List<MyGrammarParser.GlobalContext> globalVars = ctx.global();
+        
+        // Visits all global declarations
+        for(int i = 0; i < globalVars.size(); i++) {
+            visit(ctx.global(i));
+        }
+
         // Visits main
         return visit(ctx.main());
+    }
+    
+    @Override
+    public Object visitGlobal_decl(MyGrammarParser.Global_declContext ctx) {    
+        // Gets var type from declaration
+        String varType = ctx.start.getText();
+        // Gets var name from declaration
+        String varName = ctx.NAME().toString();
+        // Gets scope from declaration
+        String varScope = "global";
+        // Gets value from declaration
+        Value varValue = null;
+        
+        // Checks if this variable already exists
+        if(globalSt.checkIfAlreadyExists(varName) == true) {
+            System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The variable '" + ctx.NAME().getText() + "' already exists");
+            System.exit(0);
+        }
+        
+        // Inserts variable into current function's symbol table
+        globalSt.insert(varType, varName, varScope, varValue);
+        return null;
+    }
+    
+    @Override
+    public Object visitGlobal_decl_and_attrib(MyGrammarParser.Global_decl_and_attribContext ctx) {
+        // Gets var type from declaration
+        String varType = (String) visit(ctx.type());
+        // Gets var name from declaration
+        String varName = ctx.NAME().getText();
+        // Gets scope from declaration
+        String varScope = "global";
+        // Gets value from declaration
+        Value varValue = (Value) visit(ctx.expr());
+
+        // Checks if this variable already exists
+        if(globalSt.checkIfAlreadyExists(varName) == true) {
+            
+            System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The variable '" + varName + "' already exists");
+            System.exit(0);
+        }
+        
+        // Inserts variable into current function's symbol table
+        globalSt.insert(varType, varName, varScope, varValue);
+        return null;
     }
     
     @Override
@@ -43,12 +96,6 @@ public class Visitor extends MyGrammarBaseVisitor {
     public Object visitFunction_decl(MyGrammarParser.Function_declContext ctx) {
         // Updates currentScope with function's name
         currentScope.push(ctx.NAME().getText());
-        
-//        // Adds parameters to symbol table
-//        visit(ctx.parameters());
-        
-        // Updates variable values according to the values passed by parameter
-        
         
         // Goes to block's rule
         visit(ctx.block());
@@ -96,11 +143,9 @@ public class Visitor extends MyGrammarBaseVisitor {
         } catch (Exception e) {
             // There are no parameters, so it would get an error if there was no TRY CATCH
         }
-
-        currentScope.add(functionName);
         
         MyGrammarParser.Function_declContext functionCtx = ft.getFunction(functionName).getCtx();
-        return visit(functionCtx.block());
+        return visit(functionCtx);
     }
     
     @Override
@@ -209,14 +254,14 @@ public class Visitor extends MyGrammarBaseVisitor {
         Value varValue = null;
         
         // Checks if this variable already exists
-        if(currentSt.checkIfAlreadyExists(varName) == true) {
-            System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The variable '" + ctx.NAME().getText() + "' already exists");
+        if(currentSt.checkIfAlreadyExists(varName) == true || globalSt.checkIfAlreadyExists(varName) == true) {
+            System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The variable '" + varName + "' already exists");
             System.exit(0);
         }
         
         // Inserts variable into current function's symbol table
         currentSt.insert(varType, varName, varScope, varValue);
-        return 0;
+        return null;
     }
     
     @Override
@@ -236,15 +281,15 @@ public class Visitor extends MyGrammarBaseVisitor {
         Value varValue = (Value) visit(ctx.expr());
 
         // Checks if this variable already exists
-        if(currentSt.checkIfAlreadyExists(varName) == true) {
+        if(currentSt.checkIfAlreadyExists(varName) == true || globalSt.checkIfAlreadyExists(varName) == true) {
             
-            System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The variable '" + ctx.var_declaration().NAME().getText() + "' already exists");
+            System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The variable '" + varName + "' already exists");
             System.exit(0);
         }
         
         // Inserts variable into current function's symbol table
         currentSt.insert(varType, varName, varScope, varValue);
-        return 0;
+        return null;
     }
     
     @Override
@@ -256,10 +301,20 @@ public class Visitor extends MyGrammarBaseVisitor {
         // Gets var name
         String varName = ctx.NAME().getText();
         
+        
         // Checks if that variable exists
         if(currentSt.checkIfAlreadyExists(varName) == false) {
-            System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The variable '" + ctx.NAME().getText() + "' doesn't exist");
-            System.exit(0);
+            // Checks if that variable exists on global symbol table
+            if(globalSt.checkIfAlreadyExists(varName) == false) {
+                System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The variable '" + ctx.NAME().getText() + "' doesn't exist");
+                System.exit(0);
+            } else {
+                Value value = (Value) visit(ctx.expr());
+                globalSt.setSymbol(varName, value);
+            }
+        } else {
+            Value value = (Value) visit(ctx.expr());
+            currentSt.setSymbol(varName, value);
         }
         
         // Set new value to that variable
@@ -278,13 +333,13 @@ public class Visitor extends MyGrammarBaseVisitor {
         String varName = ctx.NAME().getText();
         
         // Checks if the variable exists
-        if(currentSt.checkIfAlreadyExists(varName) == false) {
+        if(currentSt.checkIfAlreadyExists(varName) == false && globalSt.checkIfAlreadyExists(varName) == false) {
             System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The variable '" + ctx.NAME().getText() + "' doesn't exist");
             System.exit(0);
         }
         
         // Checks if the variable value is null
-        if(currentSt.getValueFromSymbolName(varName) == null) {
+        if(currentSt.getValueFromSymbolName(varName) == null && globalSt.getValueFromSymbolName(varName) == null) {
             System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: You can't increment a NULL variable");
             System.exit(0);
         }
@@ -305,13 +360,13 @@ public class Visitor extends MyGrammarBaseVisitor {
         String varName = ctx.NAME().getText();
         
         // Checks if the variable exists
-        if(currentSt.checkIfAlreadyExists(varName) == false) {
+        if(currentSt.checkIfAlreadyExists(varName) == false && globalSt.checkIfAlreadyExists(varName) == false) {
             System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The variable '" + ctx.NAME().getText() + "' doesn't exist");
             System.exit(0);
         }
         
         // Checks if the variable value is null
-        if(currentSt.getValueFromSymbolName(varName) == null) {
+        if(currentSt.getValueFromSymbolName(varName) == null  && globalSt.getValueFromSymbolName(varName) == null) {
             System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: You can't decrement a NULL variable");
             System.exit(0);
         }
@@ -400,10 +455,14 @@ public class Visitor extends MyGrammarBaseVisitor {
         
         // Checks if that variable exists
         if(currentSt.checkIfAlreadyExists(varName) == false) {
-            System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The variable '" + ctx.NAME().getText() + "' doesn't exist");
-            System.exit(0);
+            // Checks if that variable exists on global symbol table
+            if(globalSt.checkIfAlreadyExists(varName) == false) {
+                System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The variable '" + ctx.NAME().getText() + "' doesn't exist");
+                System.exit(0);
+            } else {
+                s = globalSt.getSymbol(varName);
+            }
         } else {
-            // Gets symbol from symbol table
             s = currentSt.getSymbol(varName);
         }
         
