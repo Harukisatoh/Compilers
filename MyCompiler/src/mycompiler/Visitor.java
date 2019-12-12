@@ -19,31 +19,36 @@ public class Visitor extends MyGrammarBaseVisitor {
     Stack currentScope = new Stack();
     //String currentContext = null;
     
-    /*@Override
-    public Object visitMyGrammar(MyGrammarParser.MyGrammarContext ctx) {
-        System.out.println("entrou no mygrammar");
-        return visitChildren(ctx);
+    public Visitor(FunctionTable ft) {
+        this.ft = ft;
     }
     
     @Override
-    public Object visitProgram(MyGrammarParser.ProgramContext ctx) {
-        System.out.println("entrou no program");
-        return visitChildren(ctx);
-    }*/
+    public Object visitBody(MyGrammarParser.BodyContext ctx) {
+        // Visits main
+        return visit(ctx.main());
+    }
+    
+    @Override
+    public Object visitMain(MyGrammarParser.MainContext ctx) {
+        currentScope.push(ctx.MAIN().getText());
+        
+        // Visits main's block
+        visit(ctx.block());
+        
+        return null;
+    }
     
     @Override
     public Object visitFunction_decl(MyGrammarParser.Function_declContext ctx) {
-        System.out.println("entrou no function");
-        // Creates a new scope with function's name
+        // Updates currentScope with function's name
         currentScope.push(ctx.NAME().getText());
-        // Gets function info and add to function table
-        String type = (String) visit(ctx.type());
-        String name = ctx.NAME().getText();
-        Function function = new Function(type, name, ctx);
-        ft.addFunction(function);
         
-        // ADD PARAMETERS VARIABLE DO SYMBOL TABLE - NOT WORKING YET
-        visit(ctx.parameters());
+//        // Adds parameters to symbol table
+//        visit(ctx.parameters());
+        
+        // Updates variable values according to the values passed by parameter
+        
         
         // Goes to block's rule
         visit(ctx.block());
@@ -54,15 +59,133 @@ public class Visitor extends MyGrammarBaseVisitor {
         return null;
     }
     
-    /*@Override
-    public Object visitParams_decl(MyGrammarParser.Params_declContext ctx) {        
-        return visitChildren(ctx);
+    @Override
+    public Object visitFunction_call(MyGrammarParser.Function_callContext ctx) {
+        
+        // Gets function info
+        String functionName = ctx.NAME().getText();
+        ArrayList<Symbol> expectedParams = ft.getFunction(functionName).getExpectedParams();
+        
+        // Checks if function called exists
+        if(!ft.checkIfAlreadyExists(functionName)) {
+            System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The function '" + functionName + "' doesn't exist");
+            System.exit(0);
+        }
+        
+        // Checks if it has the same number of passed parameters as expected
+        try {
+            // Tries to get passed params
+            List<MyGrammarParser.ExprContext> passedParams = ctx.call_params().expr();
+            if(expectedParams.size() != passedParams.size()) {
+                System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The function '" + functionName + "' has wrong call parameters");
+                System.exit(0);
+            }
+        } catch (NullPointerException e) {
+            // There is no passed params, so passedParams is null
+            
+            //Checks if expected params is also null
+            if(!expectedParams.isEmpty()) {
+                System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The function call to '" + functionName + "' needs parameters");
+                System.exit(0);
+            }
+        }
+        
+        // Tries to instantiate variables from parameters
+        try {
+            visit(ctx.call_params());
+        } catch (Exception e) {
+            // There are no parameters, so it would get an error if there was no TRY CATCH
+        }
+
+        currentScope.add(functionName);
+        
+        MyGrammarParser.Function_declContext functionCtx = ft.getFunction(functionName).getCtx();
+        return visit(functionCtx.block());
     }
     
     @Override
-    public Object visitBlock(MyGrammarParser.BlockContext ctx) {
-        return visitChildren(ctx);
-    }*/
+    public ArrayList<Symbol> visitCall_params(MyGrammarParser.Call_paramsContext ctx) {
+        
+        // Gets passed params
+        List<MyGrammarParser.ExprContext> params = ctx.expr();
+        
+        // Gets function info
+        String functionName = ctx.getParent().getStart().getText();
+        ArrayList<Symbol> expectedParams = ft.getFunction(functionName).getExpectedParams();
+        SymbolTable functionSt = ft.getFunction(functionName).getSt();
+        
+        // Auxiliary variables
+        ArrayList<Value> paramsValues = new ArrayList();
+        Symbol s = null;
+
+        // Check if expected types is equal to passed parameters
+        for(int i = 0; i < params.size(); i++) {
+            
+            // Gets value from params in function call
+            Value value = (Value) visit(ctx.expr(i));
+            
+            switch(expectedParams.get(i).getType()) {
+                case "int":
+                    try {
+                        // Checks if value of param is a number
+                        Double doubleValue = value.asDouble();   
+                        
+                        // Stores value on auxiliar array
+                        paramsValues.add(new Value(doubleValue));
+                    } catch(NumberFormatException e) {
+                        System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The function '" + functionName + "' is expecting an INT parameter on value " + (i+1));
+                        System.exit(0);
+                    }
+                break;
+                case "float":
+                    try {
+                        // Checks if value of param is a number
+                        Double doubleValue = value.asDouble();   
+                        
+                        // Stores value on auxiliar array
+                        paramsValues.add(new Value(doubleValue));
+                    } catch(NumberFormatException e) {
+                        System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The function '" + functionName + "' is expecting a FLOAT parameter on value " + (i+1));
+                        System.exit(0);
+                    }
+                break;
+                case "boolean":
+                    // Checks if value of param is false or true
+                    if(value.asString().equals("true") || value.asString().equals("false")) {
+                        // Transforms value of param into boolean
+                        String aux = value.asString();
+                        Boolean boolValue = Boolean.parseBoolean(aux);
+                       
+                        // Stores value on auxiliar array
+                        paramsValues.add(new Value(boolValue));
+                    } else {
+                        System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The function '" + functionName + "' is expecting a BOOLEAN parameter on value " + (i+1));
+                        System.exit(0);
+                    }
+                break;
+                case "string":
+                    // Checks if value of param is a string
+                    try {
+                        // Casts into string
+                        String aux = value.asString();
+                        
+                        // Stores value on auxiliar array
+                        paramsValues.add(new Value(aux));
+                    } catch (Exception e) {
+                        System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The function '" + functionName + "' is expecting a STRING parameter on value " + (i+1));
+                        System.exit(0);
+                    }
+                break;
+            }
+        }
+        
+        // Creates variables from passed parameters
+        for(int i = 0; i < params.size(); i++) {
+            functionSt.insert(expectedParams.get(i).getType(), expectedParams.get(i).getName(), functionName, paramsValues.get(i));
+        }
+        
+        return null;
+    }
     
     @Override
     public String visitType(MyGrammarParser.TypeContext ctx) {
@@ -111,9 +234,10 @@ public class Visitor extends MyGrammarBaseVisitor {
         String varScope = currentScope.peek().toString();
         // Gets value from declaration
         Value varValue = (Value) visit(ctx.expr());
-        
+
         // Checks if this variable already exists
         if(currentSt.checkIfAlreadyExists(varName) == true) {
+            
             System.err.println("ERROR [" + ctx.getStart().getLine() + ":" + (ctx.getStart().getCharPositionInLine() + 1) + "]: The variable '" + ctx.var_declaration().NAME().getText() + "' already exists");
             System.exit(0);
         }

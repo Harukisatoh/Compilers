@@ -78,6 +78,15 @@ public class SymbolTable {
         return null;
     }
     
+    public String getTypeFromSymbolName(String name) {
+        for(int i = 0; i < symbols.size(); i++) {
+            if(symbols.get(i).getName().equals(name)) {
+                return symbols.get(i).getType();
+            }
+        }
+        return null;
+    }
+    
     public ArrayList<Symbol> returnArrayList() {
         return symbols;
     }

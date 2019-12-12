@@ -14,6 +14,7 @@ import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import java.io.File;
+import java.util.ArrayList;
 
 /**
  *
@@ -30,7 +31,11 @@ public class Run {
         MyGrammarParser parser = new MyGrammarParser(tokens);
         //MyGrammarParser.MyGrammarContext progr = parser.myGrammar();
         ParseTree tree = parser.myGrammar();
-        Visitor visitor = new Visitor();
+        
+        FunctionVisitor functionVisitor = new FunctionVisitor();
+        FunctionTable ft = (FunctionTable) functionVisitor.visit(tree);
+        
+        Visitor visitor = new Visitor(ft);
         visitor.visit(tree);
         
         showParseTreeFrame(tree, parser);

@@ -28,7 +28,13 @@ public class Value {
     }
 
     public boolean isDouble() {
-        return value instanceof Double;
+        try {
+            String str = String.valueOf(value);
+            Double doubleValue = Double.valueOf(str);
+            return true;
+        } catch(Exception e) {
+            return false;
+        }
     }
 
     @Override

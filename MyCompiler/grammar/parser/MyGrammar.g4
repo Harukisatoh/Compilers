@@ -12,13 +12,22 @@ myGrammar : program;
 /* 
  Parser rules
  */
-program             : body
+program             :  body
                     ;
 
-body                : (function_decl)+
+body                : main (function_decl)*
+                    ;
+
+main                : TYPEINT MAIN OPNPAR CLSPAR block
                     ;
 
 function_decl       : type NAME parameters block
+                    ;
+
+function_call       : NAME OPNPAR call_params? CLSPAR
+                    ;
+
+call_params         : (expr) (COMMA expr)*
                     ;
 
 type                : TYPEINT
@@ -45,6 +54,7 @@ statement           : var_declaration EOL
                     | for_statement
                     | while_statement
                     | dowhile_statement EOL
+                    | function_call EOL
                     ;
 
 in                  : READLN OPNPAR CLSPAR
@@ -159,6 +169,7 @@ MOR_EQ: '>=';
 LESS_EQ: '<=';
 EQ: '==';
 NEQ: '!=';
+MAIN: 'main';
 IF: 'if';
 ELSE: 'else';
 READLN: 'readln';

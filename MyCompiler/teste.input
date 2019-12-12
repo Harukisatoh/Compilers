@@ -1,12 +1,21 @@
 int main() {
-    
     //string a = "pq";
-    int b = 2;
-    do {
+    /*for(int a = 0, int b = 5; a < 10; a++, b++) {
+        writeln("A: ", a);
         writeln("B: ", b);
-        b++;
-    } while (b > 10);
-    writeln("B: ", b);
+    }*/
+
+    int a = 3;
+    float b = 6.3;
+
+    function(a, b);
+
+
+}
+
+int function(int b, float a) {
+    writeln(">", b);
+    writeln(">", a+b);
 }
 /*
 int funcao(float b, boolean d) {

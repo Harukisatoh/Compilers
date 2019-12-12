@@ -33,6 +33,15 @@ public class FunctionTable {
         return function;
     }
     
+    public Boolean checkIfAlreadyExists(String name) {
+        for(int i = 0; i < functions.size(); i++) {
+            if(name.equalsIgnoreCase(functions.get(i).getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public int size() {
         return functions.size();
     }
